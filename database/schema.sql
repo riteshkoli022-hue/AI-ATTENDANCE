@@ -1,0 +1,8 @@
+-- Reference schema; the application creates equivalent tables on first run.
+CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE students (id INTEGER PRIMARY KEY, user_id INTEGER UNIQUE NOT NULL REFERENCES users(id), student_name TEXT NOT NULL, roll_number TEXT UNIQUE NOT NULL, class_name TEXT NOT NULL, division TEXT NOT NULL, face_profile TEXT, created_at TEXT NOT NULL);
+CREATE TABLE teachers (id INTEGER PRIMARY KEY, user_id INTEGER UNIQUE NOT NULL REFERENCES users(id), teacher_name TEXT NOT NULL, department TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE subjects (id INTEGER PRIMARY KEY, subject_name TEXT NOT NULL, class_name TEXT NOT NULL, division TEXT NOT NULL, teacher_id INTEGER NOT NULL REFERENCES teachers(id));
+CREATE TABLE lectures (id INTEGER PRIMARY KEY, subject_id INTEGER NOT NULL REFERENCES subjects(id), teacher_id INTEGER NOT NULL REFERENCES teachers(id), class_name TEXT NOT NULL, division TEXT NOT NULL, lecture_date TEXT NOT NULL, start_time TEXT NOT NULL, end_time TEXT NOT NULL, attendance_open_time TEXT NOT NULL, attendance_close_time TEXT NOT NULL, room TEXT, status TEXT NOT NULL DEFAULT 'active', created_at TEXT NOT NULL);
+CREATE TABLE attendance (id INTEGER PRIMARY KEY, lecture_id INTEGER NOT NULL REFERENCES lectures(id), student_id INTEGER NOT NULL REFERENCES students(id), marked_at TEXT NOT NULL, latitude REAL, longitude REAL, distance_from_campus REAL, face_verified INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL, rejection_reason TEXT, UNIQUE(lecture_id, student_id));
+CREATE TABLE campus_settings (id INTEGER PRIMARY KEY, latitude REAL NOT NULL, longitude REAL NOT NULL, radius_meters REAL NOT NULL);
