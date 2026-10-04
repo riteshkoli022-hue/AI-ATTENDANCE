@@ -197,3 +197,5 @@ The public host stores account records, attendance data, and compact face repres
 ## Viva/demo summary
 
 The project separates routes, data models, and verification services. SQLAlchemy creates foreign keys and the unique attendance constraint. The browser collects camera and location inputs, but authorization, lecture/window/class checks, distance calculation, face matching, and duplicate checks execute in Flask. This demonstrates a full-stack flow while keeping every external service optional and free.
+#   A I - A T T E N D A N C E  
+ 
