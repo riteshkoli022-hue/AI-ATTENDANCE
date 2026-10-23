@@ -21,5 +21,7 @@ class Config:
     COLLEGE_LONGITUDE = float(os.getenv("COLLEGE_LONGITUDE", "72.8777"))
     GEOFENCE_RADIUS_METERS = float(os.getenv("GEOFENCE_RADIUS_METERS", "250"))
     FACE_MATCH_THRESHOLD = float(os.getenv("FACE_MATCH_THRESHOLD", "0.78"))
+    # Opt-in only: enables clearly fictional demo accounts for a hosted class demo.
+    SEED_DEMO_DATA = os.getenv("SEED_DEMO_DATA", "false").strip().lower() in {"1", "true", "yes"}
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024
     FACE_UPLOAD_DIR = BASE_DIR / "uploads" / "faces"

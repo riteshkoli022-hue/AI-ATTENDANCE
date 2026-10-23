@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from functools import wraps
 from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, abort
@@ -84,6 +84,60 @@ class AuditLog(db.Model):
     detail = db.Column(db.String(240), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
+def seed_demo_data():
+    """Create missing fictional demo records without overwriting existing accounts."""
+    demo_users = (
+        ("teacher.demo", "TeachDemo123!", "teacher"),
+        ("student.asha", "Student123!", "student"),
+        ("student.kabir", "Student123!", "student"),
+    )
+    users = {}
+    for username, password, role in demo_users:
+        user = User.query.filter_by(username=username).first()
+        if user is None:
+            user = User(username=username, password_hash=generate_password_hash(password), role=role)
+            db.session.add(user)
+            db.session.flush()
+        elif user.role != role:
+            raise RuntimeError(f"Demo username {username!r} is already assigned to a different role.")
+        users[username] = user
+
+    teacher = Teacher.query.filter_by(user_id=users["teacher.demo"].id).first()
+    if teacher is None:
+        teacher = Teacher(user_id=users["teacher.demo"].id, teacher_name="Demo Teacher", department="Computer Science")
+        db.session.add(teacher)
+        db.session.flush()
+
+    for username, name, roll_number in (
+        ("student.asha", "Asha Demo", "DEMO-001"),
+        ("student.kabir", "Kabir Demo", "DEMO-002"),
+    ):
+        if Student.query.filter_by(user_id=users[username].id).first() is None:
+            db.session.add(Student(user_id=users[username].id, student_name=name, roll_number=roll_number, class_name="FYCS", division="A"))
+
+    subjects = {}
+    for subject_name in ("Programming Fundamentals", "Digital Systems"):
+        subject = Subject.query.filter_by(subject_name=subject_name, class_name="FYCS", division="A", teacher_id=teacher.id).first()
+        if subject is None:
+            subject = Subject(subject_name=subject_name, class_name="FYCS", division="A", teacher_id=teacher.id)
+            db.session.add(subject)
+            db.session.flush()
+        subjects[subject_name] = subject
+
+    today = date.today()
+    lecture_specs = (
+        (0, "Programming Fundamentals", "09:00", "10:00"),
+        (0, "Digital Systems", "11:00", "12:00"),
+        (1, "Programming Fundamentals", "09:00", "10:00"),
+        (2, "Digital Systems", "11:00", "12:00"),
+    )
+    for offset, subject_name, start, end in lecture_specs:
+        lecture_date = (today + timedelta(days=offset)).isoformat()
+        subject = subjects[subject_name]
+        if Lecture.query.filter_by(subject_id=subject.id, teacher_id=teacher.id, lecture_date=lecture_date, start_time=start).first() is None:
+            db.session.add(Lecture(subject_id=subject.id, teacher_id=teacher.id, class_name="FYCS", division="A", lecture_date=lecture_date, start_time=start, end_time=end, attendance_open_time=start, attendance_close_time=end, room="Room 204", status="active"))
+    db.session.commit()
+
 def create_app(test_config=None):
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -99,6 +153,8 @@ def create_app(test_config=None):
         if not CampusSettings.query.first():
             db.session.add(CampusSettings(latitude=app.config['COLLEGE_LATITUDE'], longitude=app.config['COLLEGE_LONGITUDE'], radius_meters=app.config['GEOFENCE_RADIUS_METERS']))
             db.session.commit()
+        if app.config['SEED_DEMO_DATA']:
+            seed_demo_data()
 
     @app.context_processor
     def inject_user():

@@ -77,13 +77,13 @@ smart-attendance/
 
    Edit `.env` and replace `SECRET_KEY` with a long random value. Set campus latitude, longitude, and radius to a location you control or use the demo defaults. Never commit your real `.env` file.
 
-6. Create fictional demo accounts and schedules:
+6. Create or repair fictional demo accounts and schedules:
 
    ```powershell
    python seed_demo.py
    ```
 
-   The SQLite database and tables are created automatically by this command. To start with a clean demo database, stop the server and remove `instance\attendance.db`, then run this command again.
+   The SQLite database and tables are created automatically by this command. It is safe to run again: missing teacher or student demo accounts are added without changing existing account passwords. To start with a clean demo database, stop the server and remove `instance\attendance.db`, then run this command again.
 
 7. Start the Flask server (exact command):
 
@@ -162,7 +162,7 @@ For a college demo that students can open from anywhere, the site needs a public
    from app import app as application
    ```
 
-6. Create a private `.env` in the project folder (never add it to the ZIP or GitHub). Set `APP_ENV=production`, a long random `SECRET_KEY`, the campus latitude/longitude, geofence radius, and `DATABASE_URL=sqlite:////home/YOURUSERNAME/smart-attendance/instance/attendance.db`.
+6. Create a private `.env` in the project folder (never add it to the ZIP or GitHub). Set `APP_ENV=production`, a long random `SECRET_KEY`, the campus latitude/longitude, geofence radius, and `DATABASE_URL=sqlite:////home/YOURUSERNAME/smart-attendance/instance/attendance.db`. For a hosted class demonstration only, set `SEED_DEMO_DATA=true` to create missing fictional teacher and student demo accounts when the app starts.
 7. From the console, create a teacher account without putting its password in a command or chat:
 
    ```bash
